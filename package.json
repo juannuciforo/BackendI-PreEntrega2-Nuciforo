@@ -1,0 +1,16 @@
+{
+  "name": "preentrega2-nuciforo",
+  "version": "1.0.0",
+  "description": "Pre Entrega numero 2 de Backend I",
+  "main": "src/app.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/app.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "http": "^0.0.1",
+    "socket.io": "^4.0.0",
+    "path": "^0.12.7"
+  }
+}
