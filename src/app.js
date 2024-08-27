@@ -1,24 +1,24 @@
 import express from 'express';
 import { engine } from 'express-handlebars';
-import http from 'http';
-import { Server as SocketIO } from 'socket.io';
+import { Server } from 'socket.io';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import productRoutes from './routes/productRoutes.js';
 import cartRoutes from './routes/cartRoutes.js';
 import { router as viewsRouter } from './routes/viewsRouter.js';
-import ProductManager from './dao/productManager.js';  // Importamos ProductManager
+import ProductManager from './dao/productManager.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const server = http.createServer(app);
-const io = new SocketIO(server);
-const productManager = new ProductManager();  // Creamos una instancia de ProductManager
+const productManager = new ProductManager();
 
-// Se configuran los handlebars
-app.engine('handlebars', engine());
+// Se configuran Handlebars
+app.engine('handlebars', engine({
+  layoutsDir: path.join(__dirname, 'views/layouts'),
+  defaultLayout: 'main'
+}));
 app.set('view engine', 'handlebars');
 app.set('views', path.join(__dirname, 'views'));
 
@@ -26,31 +26,53 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Se hace accessible io para las routes
-app.set('io', io);
-
 app.use('/', viewsRouter);
 app.use('/api/products', productRoutes);
 app.use('/api/carts', cartRoutes);
 
-// Se configura WebSocket
-io.on('connection', (socket) => {
-  console.log('Nuevo cliente conectado');
-
-  socket.on('addProduct', (product) => {
-    productManager.addProduct(product);
-    io.emit('updateProducts', productManager.getProducts());
-  });
-
-  socket.on('deleteProduct', (productId) => {
-    productManager.deleteProduct(productId);
-    io.emit('updateProducts', productManager.getProducts());
-  });
+// Ruta para la vista de productos
+app.get('/products', (req, res) => {
+  const products = productManager.getProducts();
+  res.render('index', { products });
 });
 
 const PORT = 8080;
-server.listen(PORT, () => {
-  console.log(`Servidor escuchando en puerto ${PORT}`);
+const server = app.listen(PORT, () => {
+  console.log(`Server escuchando en puerto ${PORT}`);
+});
+
+const io = new Server(server);
+
+io.on('connection', (socket) => {
+  console.log('Nuevo cliente conectado');
+
+  socket.emit('updateProducts', productManager.getProducts());
+
+  socket.on('addProduct', (productData) => {
+      try {
+          const newProduct = productManager.addProduct(productData);
+          io.emit('updateProducts', productManager.getProducts());
+          socket.emit('productAdded', newProduct);
+      } catch (error) {
+          console.error('Error al agregar producto:', error.message);
+          socket.emit('productError', error.message);
+      }
+      // Se agrega un producto y avisa por consola si hay algún error
+  });
+
+  socket.on('deleteProduct', (productId) => {
+    console.log('Solicitud de eliminación recibida para el producto ID:', productId);
+    try {
+      const deletedProduct = productManager.deleteProduct(productId);
+      console.log('Producto eliminado:', deletedProduct);
+      io.emit('updateProducts', productManager.getProducts());
+      socket.emit('productDeleted', deletedProduct);
+    } catch (error) {
+      console.error('Error al eliminar producto:', error.message);
+      // Se elimina un producto y avisa por consola si hay algún error
+      socket.emit('productError', error.message);
+    }
+  });
 });
 
 export { app, io };
