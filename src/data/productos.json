@@ -1,16 +1,5 @@
 [
   {
-    "id": 2,
-    "title": "Nuevo Producto 2",
-    "description": "Descripción del producto 2",
-    "code": "ZYZ123",
-    "price": 200,
-    "status": true,
-    "stock": 5,
-    "category": "Iluminación",
-    "thumbnails": []
-  },
-  {
     "id": 3,
     "title": "Nuevo Producto 3",
     "description": "Nuevo producto creado mediante form",
@@ -28,6 +17,16 @@
     "price": "250",
     "status": true,
     "stock": "20",
+    "thumbnails": []
+  },
+  {
+    "id": 5,
+    "title": "Nuevo Producto 5",
+    "description": "Nuevo producto creado mediante form",
+    "code": "ZYZ126",
+    "price": "300",
+    "status": true,
+    "stock": "50",
     "thumbnails": []
   }
 ]

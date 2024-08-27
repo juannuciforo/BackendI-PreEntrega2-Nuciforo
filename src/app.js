@@ -1,15 +1,12 @@
+import __dirname from './utils.js';
 import express from 'express';
 import { engine } from 'express-handlebars';
 import { Server } from 'socket.io';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import productRoutes from './routes/productRoutes.js';
 import cartRoutes from './routes/cartRoutes.js';
 import { router as viewsRouter } from './routes/viewsRouter.js';
 import ProductManager from './dao/productManager.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const app = express();
 const productManager = new ProductManager();
@@ -44,7 +41,7 @@ const server = app.listen(PORT, () => {
 const io = new Server(server);
 
 io.on('connection', (socket) => {
-  console.log('Nuevo cliente conectado');
+  console.log(`Se ha conectado un cliente con id ${socket.id}`)
 
   socket.emit('updateProducts', productManager.getProducts());
 
