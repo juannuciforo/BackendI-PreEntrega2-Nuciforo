@@ -66,9 +66,9 @@ io.on('connection', (socket) => {
       socket.emit('productDeleted', deletedProduct);
     } catch (error) {
       console.error('Error al eliminar producto:', error.message);
-      // Se elimina un producto y avisa por consola si hay algún error
       socket.emit('productError', error.message);
     }
+      // Se elimina un producto y avisa por consola si hay algún error
   });
 });
 
